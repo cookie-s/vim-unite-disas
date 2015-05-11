@@ -21,7 +21,6 @@ function! s:unite_source.gather_candidates(args, context)
                 \"action__line": i + 1
                 \} )
     endfor
-    echo res
     return res
 endfunction
 
