@@ -4,19 +4,27 @@ let s:unite_source = {
 
 function! s:unite_source.gather_candidates(args, context)
     let path = expand('#:p')
-    let lines = getbufline('#', 1, '$')
-    call filter(lines, "v:val =~ '^\\([0-9a-f]\\+\\s\\)\\?<'")
-    let funcs = lines
-"    let funcs = map(lines, "substitute(substitute(v:val, '<', ''), '>', '')")
-    return map(funcs, '{
-                \"word": v:val,
+    let lines = getbufline('%', 1, '$')
+    let funcs = {}
+    for i in range(len(lines))
+       let funcs[i] = get(lines, i)
+    endfor
+    call filter(funcs, "v:val =~ '^\\([0-9a-f]\\+\\s\\)\\?<'")
+    call map(funcs, "matchstr(v:val, '<.\\+>')")
+    let res = []
+    for i in keys(funcs)
+        call insert(res, {
+                \"word": funcs[i],
                 \"source": "disas",
                 \"kind": "jump_list",
-                \"action_path": path,
-                \"action_line": v:key+1
-                \}')
+                \"action__path": path,
+                \"action__line": i + 1
+                \} )
+    endfor
+    echo res
+    return res
 endfunction
 
-call unite#define_source(s:unite_source)
-unlet s:unite_source
-
+function! unite#sources#disas#define()
+  return s:unite_source
+endfunction
